@@ -1,0 +1,67 @@
+import numpy as np
+import keras
+import matplotlib.pyplot as plt
+from scipy import ndimage
+import tensorflow as tf
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
+from keras.layers.core import Dense, Dropout, Flatten, Activation
+from keras.models import model_from_json
+
+
+
+
+## Import File
+# Read Number of Images
+with open("fer2013.csv") as f:                                          # Open the .csv file
+    content= f.readlines()                                              # into content add the new lines
+lines = np.array(content)                                               # convert the previous reading of the file into a numpy array
+num_of_instances = lines.size                                           # Count how many lines (images) there are in the
+print("Total Number of Images: ", num_of_instances)
+
+# Gaussian Noise
+## create guassian
+mean = 0
+var = 0.007
+sigma = var ** 0.5
+
+# Read the Images
+## Declare Arrays
+x_train = []
+y_train = []
+x_train1 = []
+y_train1 = []
+
+num_classes = 7
+for i in range(1,num_of_instances):                                     # loop through all the images
+    emotion, img, usage = lines[i].split(",")                           # Delimits the .csv file into three sections (emotion, image, usage)
+    val = img.split(" ")                                                # Combine all the values
+    pixels = np.array(val, 'float32')                                   # We are converting everyting into a numpy image array
+    emotion = keras.utils.to_categorical(emotion, num_classes)
+    if 'Training' in usage:
+        # Main Dataset
+        y_train.append(emotion)
+        x_train.append(pixels)
+        # Noisy Dataset
+        y_train1.append(emotion)
+
+x_train = np.array(x_train, 'float32')
+y_train = np.array(y_train, 'float32')
+x_train /= 255
+x_train = x_train.reshape(x_train.shape[0], 48, 48)
+x_train = x_train.astype('float32')
+print('Training Samples: ', x_train.shape[0])
+count = x_train.shape[0]
+
+for i in range(0,count):
+    gaussian = np.random.normal(mean, sigma, (48, 48))  # Gaussian Noise is always randomized at the beginning
+    img1 = x_train[i] + gaussian
+    x_train1.append(img1)
+
+# Display First Image
+img1 = plt.imshow(x_train[5])
+plt.show(img1)
+
+
+img1 = plt.imshow(x_train1[5])
+plt.show(img1)
